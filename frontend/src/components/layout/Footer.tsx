@@ -65,7 +65,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
             <div className="flex items-center gap-3 pt-2">
               <a
-                href="https://github.com/Anjana-Hesh/loan-risk-prediction-system"
+                href="https://github.com/Anjana-Hesh/loan-risk-prediction-system.git"
                 target="_blank"
                 rel="noreferrer"
                 className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/40 transition shadow-sm"
@@ -74,7 +74,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 <GitFork className="w-4 h-4" />
               </a>
               <a
-                href="https://linkedin.com"
+                href="https://www.linkedin.com/in/anjana-heshan-79334b260/"
                 target="_blank"
                 rel="noreferrer"
                 className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:border-cyan-500/40 transition shadow-sm"
