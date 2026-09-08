@@ -21,6 +21,7 @@ const defaultValues: LoanFormData = {
 
 export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
   const [formData, setFormData] = useState<LoanFormData>(defaultValues);
+  const [error, setError] = useState<string>('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -32,6 +33,17 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    if (formData.person_age < 18) {
+      setError('Applicant must be at least 18 years old.');
+      return;
+    }
+    if (formData.loan_amnt <= 0) {
+      setError('Loan amount must be greater than zero.');
+      return;
+    }
+    
     onAssess(formData);
   };
 
@@ -44,7 +56,10 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
         </div>
         <button
           type="button"
-          onClick={() => setFormData(defaultValues)}
+          onClick={() => {
+            setFormData(defaultValues);
+            setError('');
+          }}
           className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60 transition"
         >
           <RotateCcw className="w-3 h-3" /> Reset
@@ -158,6 +173,13 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
             />
           </div>
         </div>
+
+        {error && (
+          <div className="flex items-center gap-2 text-xs text-rose-400 bg-rose-500/10 p-3 rounded-xl border border-rose-500/20">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {error}
+          </div>
+        )}
 
         <button
           type="submit"
