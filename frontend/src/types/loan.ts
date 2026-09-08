@@ -1,21 +1,22 @@
 export interface LoanFormData {
-  person_age: number;
-  person_income: number;
-  person_home_ownership: 'RENT' | 'OWN' | 'MORTGAGE' | 'OTHER';
-  person_emp_length: number;
-  loan_intent: 'PERSONAL' | 'EDUCATION' | 'MEDICAL' | 'VENTURE' | 'HOMEIMPROVEMENT' | 'DEBTCONSOLIDATION';
-  loan_amnt: number;
-  loan_int_rate: number;
-  cb_person_cred_hist_length: number;
+  annual_income: number;
+  debt_to_income_ratio: number;
+  credit_score: number;
+  loan_amount: number;
+  interest_rate: number;
+  gender: 'Female' | 'Male' | 'Other';
+  marital_status: 'Single' | 'Married' | 'Divorced' | 'Widowed';
+  education_level: 'High School' | "Bachelor's" | "Master's" | 'PhD' | 'Other';
+  employment_status: 'Employed' | 'Self-employed' | 'Unemployed' | 'Retired' | 'Student';
+  loan_purpose: 'Debt consolidation' | 'Car' | 'Home' | 'Education' | 'Business' | 'Medical' | 'Vacation' | 'Other';
+  grade_subgrade: string;
 }
 
 export interface PredictionResult {
-  prediction: 0 | 1; // 0 = Approved / Low Risk, 1 = Rejected / High Risk
+  prediction: 0 | 1; // 0 = Approved (Low Risk), 1 = Rejected (High Risk)
   risk_probability: number;
   confidence_score: number;
   debt_to_income_ratio: number;
-  loan_to_income_ratio: number;
-  model_name: string;
   timestamp: string;
   risk_factors: string[];
 }

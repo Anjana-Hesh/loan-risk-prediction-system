@@ -16,22 +16,19 @@ export default function App() {
   const handleAssessment = (formData: LoanFormData) => {
     setLoading(true);
 
-    // Mock API execution (Spring Boot / FastAPI REST call)
+    // Initial local evaluation simulation (will connect to backend endpoint)
     setTimeout(() => {
-      const dti = formData.loan_amnt / formData.person_income;
-      const isHighRisk = dti > 0.35 || formData.loan_int_rate > 14;
+      const isHighRisk = formData.debt_to_income_ratio > 0.25 || formData.credit_score < 600 || formData.interest_rate > 15;
 
       const newResult: PredictionResult = {
         prediction: isHighRisk ? 1 : 0,
-        risk_probability: isHighRisk ? 0.78 : 0.16,
-        confidence_score: 0.94,
-        debt_to_income_ratio: dti,
-        loan_to_income_ratio: dti,
-        model_name: 'XGBoost-V2.1-Ensemble',
+        risk_probability: isHighRisk ? 0.76 : 0.14,
+        confidence_score: 0.93,
+        debt_to_income_ratio: formData.debt_to_income_ratio,
         timestamp: new Date().toISOString(),
         risk_factors: isHighRisk
-          ? ['Elevated Debt-to-Income ratio (> 35%)', 'Higher risk interest tier (> 14%)']
-          : ['Strong income buffer', 'Healthy credit history tenure']
+          ? ['Elevated Debt-to-Income vector', 'Lower tier credit score qualification']
+          : ['Prime credit score qualification', 'Strong income-to-debt ratio']
       };
 
       setResult(newResult);

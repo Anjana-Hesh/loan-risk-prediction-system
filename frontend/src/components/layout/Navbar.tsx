@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Activity, Server } from 'lucide-react';
+import { ShieldCheck, Activity } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   return (
@@ -10,19 +10,15 @@ export const Navbar: React.FC = () => {
             <ShieldCheck className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-slate-100 tracking-tight">CreditRisk AI</h1>
-            <p className="text-[11px] text-slate-400">Automated Loan Underwriting Console</p>
+            <h1 className="text-base font-bold text-slate-100 tracking-tight">CreditRisk Underwriting</h1>
+            <p className="text-[11px] text-slate-400">Automated Credit Risk Management System</p>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
-            <Server className="w-3.5 h-3.5 text-cyan-400" />
-            <span>FastAPI ML Engine</span>
-          </div>
           <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full font-medium">
             <Activity className="w-3.5 h-3.5 animate-pulse" />
-            Online
+            Underwriting System Online
           </div>
         </div>
       </div>
