@@ -9,18 +9,18 @@ interface FeatureWeight {
 
 export const FeatureImportanceChart: React.FC = () => {
   const features: FeatureWeight[] = [
-    { feature: 'Engineered Debt-to-Income (DTI)', weight: 35 },
-    { feature: 'Loan Interest Rate', weight: 25 },
-    { feature: 'Annual Income (Log Scale)', weight: 18 },
-    { feature: 'Credit History Tenure', weight: 12 },
-    { feature: 'Home Ownership Categorical', weight: 10 }
+    { feature: 'Credit Rating Grade (grade_subgrade)', weight: 32 },
+    { feature: 'Calculated Debt-to-Income (DTI)', weight: 25 },
+    { feature: 'Credit Score Benchmark', weight: 19 },
+    { feature: 'Interest Rate Vector', weight: 14 },
+    { feature: 'Annual Income Scaling', weight: 10 }
   ];
 
   return (
     <GlassCard className="p-6">
       <div className="flex items-center gap-2 pb-3 border-b border-slate-800 mb-4">
         <Sliders className="w-4 h-4 text-cyan-400" />
-        <h3 className="text-sm font-bold text-slate-200">Feature Importance Ranking</h3>
+        <h3 className="text-sm font-bold text-slate-200">Risk Feature Weight Matrix</h3>
       </div>
 
       <div className="space-y-3">
