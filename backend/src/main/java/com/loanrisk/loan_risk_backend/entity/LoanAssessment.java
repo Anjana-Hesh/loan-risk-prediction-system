@@ -19,33 +19,42 @@ public class LoanAssessment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    // Applicant Underwriting Vector
     @Column(nullable = false)
-    private Integer personAge;
+    private Double annualIncome;
 
     @Column(nullable = false)
-    private Double personIncome;
-
-    @Column(nullable = false)
-    private String personHomeOwnership;
-
-    @Column(nullable = false)
-    private Integer personEmpLength;
-
-    @Column(nullable = false)
-    private String loanIntent;
-
-    @Column(nullable = false)
-    private Double loanAmnt;
-
-    @Column(nullable = false)
-    private Double loanIntRate;
-
-    @Column(nullable = false)
-    private Integer cbPersonCredHistLength;
-
-    // Engineered Features & Outcomes
     private Double debtToIncomeRatio;
-    private Integer predictionVerdict; // 0 = Low Risk (Approved), 1 = High Risk (Rejected)
+
+    @Column(nullable = false)
+    private Integer creditScore;
+
+    @Column(nullable = false)
+    private Double loanAmount;
+
+    @Column(nullable = false)
+    private Double interestRate;
+
+    @Column(nullable = false)
+    private String gender;
+
+    @Column(nullable = false)
+    private String maritalStatus;
+
+    @Column(nullable = false)
+    private String educationLevel;
+
+    @Column(nullable = false)
+    private String employmentStatus;
+
+    @Column(nullable = false)
+    private String loanPurpose;
+
+    @Column(nullable = false)
+    private String gradeSubgrade;
+
+    // Underwriting Decision Outputs
+    private Integer predictionVerdict; // 0 = Approved, 1 = Rejected
     private Double riskProbability;
     private Double confidenceScore;
     private String assignedModel;

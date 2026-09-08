@@ -9,11 +9,10 @@ import java.util.List;
 @AllArgsConstructor
 public class LoanAssessmentResponseDTO {
     private String id;
-    private Integer prediction; // 0 or 1
+    private Integer prediction; // 0 = Low Risk (Approved), 1 = High Risk (Rejected)
     private Double risk_probability;
     private Double confidence_score;
     private Double debt_to_income_ratio;
-    private Double loan_to_income_ratio;
     private String model_name;
     private String timestamp;
     private List<String> risk_factors;
