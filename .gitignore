@@ -12,11 +12,21 @@ backend/*.iml
 
 # Python / ML
 ml-service/venv/
-ml-service/__pycache__/
-ml-service/*.pyc
+ml-service/**/__pycache__/
+ml-service/**/*.py[cod]
 ml-service/.ipynb_checkpoints/
 ml-service/models/*.pkl
+ml-service/models/*.joblib
+ml-service/data/*.csv
+ml-service/data/**/*.csv
+!ml-service/**/.gitkeep
 
-# General
+# IDE / General
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 .DS_Store
 *.log
