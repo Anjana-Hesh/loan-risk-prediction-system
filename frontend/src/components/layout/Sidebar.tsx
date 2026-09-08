@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, History, Cpu, FileSpreadsheet } from 'lucide-react';
+import { LayoutDashboard, History, Cpu } from 'lucide-react';
 
 interface SidebarProps {
   currentTab: 'assessment' | 'history' | 'metrics';
@@ -10,7 +10,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab }) =
   const navItems = [
     { id: 'assessment' as const, label: 'Run Assessment', icon: LayoutDashboard },
     { id: 'history' as const, label: 'Audit Log & History', icon: History },
-    { id: 'metrics' as const, label: 'ML Model Insights', icon: Cpu }
+    { id: 'metrics' as const, label: 'Underwriting Metrics', icon: Cpu }
   ];
 
   return (
