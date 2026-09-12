@@ -8,7 +8,7 @@ app = FastAPI(title="Credit Risk Inference Engine", version="2.0")
 
 # Model path dynamically resolve 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = os.path.join(BASE_DIR, "model", "loan_risk_pipeline.pkl")
+MODEL_PATH = os.path.join(BASE_DIR, "models", "loan_risk_pipeline.pkl")
 
 pipeline = None
 try:

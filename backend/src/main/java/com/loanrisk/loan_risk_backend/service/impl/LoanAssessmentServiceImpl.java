@@ -10,8 +10,10 @@ import com.loanrisk.loan_risk_backend.service.LoanAssessmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,17 +31,94 @@ public class LoanAssessmentServiceImpl implements LoanAssessmentService {
     @Value("${ml-service.base-url}")
     private String mlServiceUrl;
 
+//    @Override
+//    public LoanAssessmentResponseDTO evaluateLoanRisk(LoanAssessmentRequestDTO requestDTO) {
+//        int predictionVerdict;
+//        double riskProbability;
+//        double confidence;
+//        String modelName = "CreditRisk-Inference-Engine-v2";
+//        List<String> riskFactors = new ArrayList<>();
+//
+//        try {
+//            // FastAPI microservice integration endpoint
+//            MLServicePredictionDTO mlResponse = webClientBuilder.build()
+//                    .post()
+//                    .uri(mlServiceUrl + "/predict")
+//                    .bodyValue(requestDTO)
+//                    .retrieve()
+//                    .bodyToMono(MLServicePredictionDTO.class)
+//                    .block();
+//
+//            if (mlResponse != null) {
+//                predictionVerdict = mlResponse.getPrediction();
+//                riskProbability = mlResponse.getProbability_risk();
+//                confidence = mlResponse.getConfidence_score();
+//                if (mlResponse.getKey_risk_factors() != null) {
+//                    riskFactors = mlResponse.getKey_risk_factors();
+//                }
+//            } else {
+//                throw new IllegalStateException("Empty response from ML inference engine");
+//            }
+//        } catch (Exception ex) {
+//            log.warn("FastAPI ML microservice offline or unreachable. Executing policy engine fallback: {}", ex.getMessage());
+//
+//            // Policy Rule Engine Fallback
+//            boolean isHighRisk = requestDTO.getDebt_to_income_ratio() > 0.25
+//                    || requestDTO.getCredit_score() < 600
+//                    || requestDTO.getInterest_rate() > 15.0;
+//
+//            predictionVerdict = isHighRisk ? 1 : 0;
+//            riskProbability = isHighRisk ? 0.76 : 0.14;
+//            confidence = 0.93;
+//
+//            if (predictionVerdict == 1) {
+//                riskFactors.add("Elevated Debt-to-Income vector");
+//                riskFactors.add("Lower tier credit score qualification");
+//            } else {
+//                riskFactors.add("Prime credit score qualification");
+//                riskFactors.add("Strong income-to-debt ratio");
+//            }
+//        }
+//
+//        LoanAssessment entity = LoanAssessment.builder()
+//                .annualIncome(requestDTO.getAnnual_income())
+//                .debtToIncomeRatio(requestDTO.getDebt_to_income_ratio())
+//                .creditScore(requestDTO.getCredit_score())
+//                .loanAmount(requestDTO.getLoan_amount())
+//                .interestRate(requestDTO.getInterest_rate())
+//                .gender(requestDTO.getGender())
+//                .maritalStatus(requestDTO.getMarital_status())
+//                .educationLevel(requestDTO.getEducation_level())
+//                .employmentStatus(requestDTO.getEmployment_status())
+//                .loanPurpose(requestDTO.getLoan_purpose())
+//                .gradeSubgrade(requestDTO.getGrade_subgrade())
+//                .predictionVerdict(predictionVerdict)
+//                .riskProbability(riskProbability)
+//                .confidenceScore(confidence)
+//                .assignedModel(modelName)
+//                .build();
+//
+//        LoanAssessment saved = loanAssessmentDAO.save(entity);
+//
+//        return LoanAssessmentResponseDTO.builder()
+//                .id(saved.getId())
+//                .prediction(predictionVerdict)
+//                .risk_probability(riskProbability)
+//                .confidence_score(confidence)
+//                .debt_to_income_ratio(requestDTO.getDebt_to_income_ratio())
+//                .model_name(modelName)
+//                .timestamp(LocalDateTime.now().toString())
+//                .risk_factors(riskFactors)
+//                .build();
+//    }
+
     @Override
     public LoanAssessmentResponseDTO evaluateLoanRisk(LoanAssessmentRequestDTO requestDTO) {
-        int predictionVerdict;
-        double riskProbability;
-        double confidence;
-        String modelName = "CreditRisk-Inference-Engine-v2";
-        List<String> riskFactors = new ArrayList<>();
+        MLServicePredictionDTO mlResponse;
 
         try {
             // FastAPI microservice integration endpoint
-            MLServicePredictionDTO mlResponse = webClientBuilder.build()
+            mlResponse = webClientBuilder.build()
                     .post()
                     .uri(mlServiceUrl + "/predict")
                     .bodyValue(requestDTO)
@@ -47,35 +126,15 @@ public class LoanAssessmentServiceImpl implements LoanAssessmentService {
                     .bodyToMono(MLServicePredictionDTO.class)
                     .block();
 
-            if (mlResponse != null) {
-                predictionVerdict = mlResponse.getPrediction();
-                riskProbability = mlResponse.getProbability_risk();
-                confidence = mlResponse.getConfidence_score();
-                if (mlResponse.getKey_risk_factors() != null) {
-                    riskFactors = mlResponse.getKey_risk_factors();
-                }
-            } else {
-                throw new IllegalStateException("Empty response from ML inference engine");
+            if (mlResponse == null) {
+                throw new IllegalStateException("ML Service returned an empty response.");
             }
         } catch (Exception ex) {
-            log.warn("FastAPI ML microservice offline or unreachable. Executing policy engine fallback: {}", ex.getMessage());
-
-            // Policy Rule Engine Fallback
-            boolean isHighRisk = requestDTO.getDebt_to_income_ratio() > 0.25
-                    || requestDTO.getCredit_score() < 600
-                    || requestDTO.getInterest_rate() > 15.0;
-
-            predictionVerdict = isHighRisk ? 1 : 0;
-            riskProbability = isHighRisk ? 0.76 : 0.14;
-            confidence = 0.93;
-
-            if (predictionVerdict == 1) {
-                riskFactors.add("Elevated Debt-to-Income vector");
-                riskFactors.add("Lower tier credit score qualification");
-            } else {
-                riskFactors.add("Prime credit score qualification");
-                riskFactors.add("Strong income-to-debt ratio");
-            }
+            log.error("ML Inference microservice call failed: {}", ex.getMessage());
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "ML Inference Engine is offline or failed. Prediction cannot be processed without the ML Model."
+            );
         }
 
         LoanAssessment entity = LoanAssessment.builder()
@@ -90,23 +149,23 @@ public class LoanAssessmentServiceImpl implements LoanAssessmentService {
                 .employmentStatus(requestDTO.getEmployment_status())
                 .loanPurpose(requestDTO.getLoan_purpose())
                 .gradeSubgrade(requestDTO.getGrade_subgrade())
-                .predictionVerdict(predictionVerdict)
-                .riskProbability(riskProbability)
-                .confidenceScore(confidence)
-                .assignedModel(modelName)
+                .predictionVerdict(mlResponse.getPrediction())
+                .riskProbability(mlResponse.getProbability_risk())
+                .confidenceScore(mlResponse.getConfidence_score())
+                .assignedModel(mlResponse.getModel_name() != null ? mlResponse.getModel_name() : "CreditRisk-Inference-Engine-v2")
                 .build();
 
         LoanAssessment saved = loanAssessmentDAO.save(entity);
 
         return LoanAssessmentResponseDTO.builder()
                 .id(saved.getId())
-                .prediction(predictionVerdict)
-                .risk_probability(riskProbability)
-                .confidence_score(confidence)
+                .prediction(saved.getPredictionVerdict())
+                .risk_probability(saved.getRiskProbability())
+                .confidence_score(saved.getConfidenceScore())
                 .debt_to_income_ratio(requestDTO.getDebt_to_income_ratio())
-                .model_name(modelName)
+                .model_name(saved.getAssignedModel())
                 .timestamp(LocalDateTime.now().toString())
-                .risk_factors(riskFactors)
+                .risk_factors(mlResponse.getKey_risk_factors())
                 .build();
     }
 
