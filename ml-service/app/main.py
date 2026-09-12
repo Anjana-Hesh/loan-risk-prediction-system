@@ -1,12 +1,34 @@
 import os
 import joblib
+import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from sklearn.base import BaseEstimator, TransformerMixin
+
+# Colab pipeline එක unpickle වීමට මෙම class එක අනිවාර්යයෙන්ම තිබිය යුතුය
+class DomainFeatureEngineer(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        X_out = X.copy()
+        X_out['loan_to_income_ratio'] = X_out['loan_amount'] / (X_out['annual_income'] + 1.0)
+        X_out['monthly_interest_cost'] = (X_out['loan_amount'] * (X_out['interest_rate'] / 100.0)) / 12.0
+        X_out['credit_tier'] = pd.cut(
+            X_out['credit_score'], 
+            bins=[-np.inf, 620, 680, np.inf], 
+            labels=['Subprime', 'NearPrime', 'Prime']
+        ).astype(str)
+        return X_out
+
+# Pickle engine එකට __main__ namespace එක හරහා මෙම class එක සොයා ගැනීමට ඉඩ සලසයි
+import __main__
+__main__.DomainFeatureEngineer = DomainFeatureEngineer
 
 app = FastAPI(title="Credit Risk Inference Engine", version="2.0")
 
-# Model path dynamically resolve 
+# Model path dynamically resolve
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "loan_risk_pipeline.pkl")
 
