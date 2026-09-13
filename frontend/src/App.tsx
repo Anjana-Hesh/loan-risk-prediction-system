@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { LoanFormData, PredictionResult, AssessmentRecord } from './types/loan';
 import { evaluateLoanApplicant, getAssessmentAuditHistory } from './services/api';
 import { Navbar } from './components/layout/Navbar';
