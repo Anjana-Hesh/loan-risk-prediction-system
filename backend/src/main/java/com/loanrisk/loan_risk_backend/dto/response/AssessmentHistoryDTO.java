@@ -13,15 +13,17 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AssessmentHistoryDTO {
     private String id;
-    private Integer personAge;
-    private Double personIncome;
-    private String personHomeOwnership;
-    private Integer personEmpLength;
-    private String loanIntent;
-    private Double loanAmnt;
-    private Double loanIntRate;
-    private Integer cbPersonCredHistLength;
+    private Double annualIncome;
     private Double debtToIncomeRatio;
+    private Integer creditScore;
+    private Double loanAmount;
+    private Double interestRate;
+    private String gender;
+    private String maritalStatus;
+    private String educationLevel;
+    private String employmentStatus;
+    private String loanPurpose;
+    private String gradeSubgrade;
     private Integer predictionVerdict;
     private Double riskProbability;
     private Double confidenceScore;

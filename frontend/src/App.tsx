@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { LoanFormData, PredictionResult, AssessmentRecord } from './types/loan';
+import { evaluateLoanApplicant, getAssessmentAuditHistory } from './services/api';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
 import { Footer } from './components/layout/Footer';
@@ -13,36 +14,36 @@ export default function App() {
   const [loading, setLoading] = useState<boolean>(false);
   const [history, setHistory] = useState<AssessmentRecord[]>([]);
 
-  const handleAssessment = (formData: LoanFormData) => {
+  // 1. Initial Load: Fetch History from DB via Service
+  useEffect(() => {
+    getAssessmentAuditHistory()
+      .then((data) => setHistory(data))
+      .catch((err) => console.warn('Audit history service offline:', err));
+  }, []);
+
+  // 2. Submit Assessment via Service
+  const handleAssessment = async (formData: LoanFormData) => {
     setLoading(true);
 
-    // Initial local evaluation simulation (will connect to backend endpoint)
-    setTimeout(() => {
-      const isHighRisk = formData.debt_to_income_ratio > 0.25 || formData.credit_score < 600 || formData.interest_rate > 15;
-
-      const newResult: PredictionResult = {
-        prediction: isHighRisk ? 1 : 0,
-        risk_probability: isHighRisk ? 0.76 : 0.14,
-        confidence_score: 0.93,
-        debt_to_income_ratio: formData.debt_to_income_ratio,
-        timestamp: new Date().toISOString(),
-        risk_factors: isHighRisk
-          ? ['Elevated Debt-to-Income vector', 'Lower tier credit score qualification']
-          : ['Prime credit score qualification', 'Strong income-to-debt ratio']
-      };
+    try {
+      const { result: newResult, recordId } = await evaluateLoanApplicant(formData);
 
       setResult(newResult);
 
-      const record: AssessmentRecord = {
+      const newRecord: AssessmentRecord = {
         ...formData,
-        id: crypto.randomUUID(),
+        id: recordId,
         created_at: new Date().toLocaleDateString(),
-        result: newResult
+        result: newResult,
       };
 
-      setHistory(prev => [record, ...prev]);
+      setHistory((prev) => [newRecord, ...prev]);
+    } catch (error) {
+      console.error('Underwriting assessment failed:', error);
+      alert('Failed to connect to backend underwriting service. Ensure Spring Boot is running.');
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
   return (
