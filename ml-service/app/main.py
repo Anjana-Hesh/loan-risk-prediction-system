@@ -2,11 +2,13 @@ import os
 import joblib
 import numpy as np
 import pandas as pd
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from sklearn.base import BaseEstimator, TransformerMixin
 
-# Colab pipeline එක unpickle වීමට මෙම class එක අනිවාර්යයෙන්ම තිබිය යුතුය
+
+# Custom Transformer class for unpickling pipeline
 class DomainFeatureEngineer(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
@@ -16,31 +18,45 @@ class DomainFeatureEngineer(BaseEstimator, TransformerMixin):
         X_out['loan_to_income_ratio'] = X_out['loan_amount'] / (X_out['annual_income'] + 1.0)
         X_out['monthly_interest_cost'] = (X_out['loan_amount'] * (X_out['interest_rate'] / 100.0)) / 12.0
         X_out['credit_tier'] = pd.cut(
-            X_out['credit_score'], 
-            bins=[-np.inf, 620, 680, np.inf], 
+            X_out['credit_score'],
+            bins=[-np.inf, 620, 680, np.inf],
             labels=['Subprime', 'NearPrime', 'Prime']
         ).astype(str)
         return X_out
 
-# Pickle engine එකට __main__ namespace එක හරහා මෙම class එක සොයා ගැනීමට ඉඩ සලසයි
+
+# Allow pickle engine to resolve the custom transformer under __main__
 import __main__
+
 __main__.DomainFeatureEngineer = DomainFeatureEngineer
 
-app = FastAPI(title="Credit Risk Inference Engine", version="2.0")
-
-# Model path dynamically resolve
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = os.path.join(BASE_DIR, "models", "loan_risk_pipeline.pkl")
-
 pipeline = None
-try:
-    if os.path.exists(MODEL_PATH):
-        pipeline = joblib.load(MODEL_PATH)
-        print("Model Pipeline successfully loaded into memory!")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global pipeline
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    model_path = os.path.join(base_dir, "models", "loan_risk_pipeline.pkl")
+
+    if not os.path.exists(model_path):
+        print(f"CRITICAL: Model file not found at {model_path}")
     else:
-        print(f"Warning: Model file not found at {MODEL_PATH}")
-except Exception as e:
-    print(f"Error loading model: {e}")
+        try:
+            pipeline = joblib.load(model_path)
+            print("Model Pipeline successfully loaded into memory!")
+        except Exception as e:
+            print(f"Error loading model pipeline: {e}")
+    yield
+    pipeline = None
+
+
+app = FastAPI(
+    title="Credit Risk Inference Engine",
+    version="2.0",
+    lifespan=lifespan
+)
+
 
 class LoanApplicantPayload(BaseModel):
     annual_income: float
@@ -55,6 +71,17 @@ class LoanApplicantPayload(BaseModel):
     loan_purpose: str
     grade_subgrade: str
 
+
+# Health check endpoint for Docker Compose
+@app.get("/")
+def health_check():
+    return {
+        "status": "healthy",
+        "service": "Credit Risk Inference Engine",
+        "model_loaded": pipeline is not None
+    }
+
+
 @app.post("/predict")
 def predict_loan_risk(data: LoanApplicantPayload):
     if pipeline is None:
@@ -66,7 +93,7 @@ def predict_loan_risk(data: LoanApplicantPayload):
 
     prediction = int(pipeline.predict(input_df)[0])
     probabilities = pipeline.predict_proba(input_df)[0]
-    
+
     # Dataset Target: 1 = Paid Back (Approved/Low Risk), 0 = Default (High Risk)
     risk_prob = float(probabilities[0])
     confidence = float(max(probabilities))
@@ -82,7 +109,7 @@ def predict_loan_risk(data: LoanApplicantPayload):
         risk_factors.append("Strong income buffer and low debt profile")
 
     return {
-        "prediction": 1 if prediction == 0 else 0, # 1 = Rejected, 0 = Approved
+        "prediction": 1 if prediction == 0 else 0,  # 1 = Rejected, 0 = Approved
         "probability_risk": round(risk_prob, 4),
         "confidence_score": round(confidence, 4),
         "model_name": "CreditRisk-Inference-Engine-v2",

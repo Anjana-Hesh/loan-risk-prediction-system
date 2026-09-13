@@ -3,6 +3,11 @@ frontend/node_modules/
 frontend/dist/
 frontend/.env
 frontend/.env.local
+.env
+.env.local
+*.env
+!.env.example
+!frontend/.env.example
 
 # Java / Spring Boot
 backend/target/
