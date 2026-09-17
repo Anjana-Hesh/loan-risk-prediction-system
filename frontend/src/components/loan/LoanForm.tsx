@@ -33,12 +33,20 @@ const defaultValues: LoanFormData = {
 
 export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
   const [formData, setFormData] = useState<LoanFormData>(defaultValues);
-  const [error, setError] = useState<string>('');
+  
+  // Object to store all field-specific validation errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const numericFields = ['annual_income', 'debt_to_income_ratio', 'credit_score', 'loan_amount', 'interest_rate'];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Clear the specific field's error when the user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: numericFields.includes(name) ? Number(value) : value
@@ -47,17 +55,42 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    const newErrors: Record<string, string> = {};
 
-    if (formData.annual_income <= 0 || formData.loan_amount <= 0) {
-      setError('Income and Loan Amount must be greater than zero.');
-      return;
-    }
-    if (formData.credit_score < 300 || formData.credit_score > 850) {
-      setError('Credit Score must be between 300 and 850.');
-      return;
+    // 1. Annual Income Validation
+    if (!formData.annual_income || formData.annual_income <= 0) {
+      newErrors.annual_income = 'Income must be greater than $0.';
     }
 
+    // 2. Loan Amount Validation
+    if (!formData.loan_amount || formData.loan_amount <= 0) {
+      newErrors.loan_amount = 'Loan amount must be greater than $0.';
+    } else if (formData.loan_amount > formData.annual_income * 10) {
+      newErrors.loan_amount = 'Loan amount exceeds reasonable limits based on income.';
+    }
+
+    // 3. Credit Score Validation
+    if (!formData.credit_score || formData.credit_score < 300 || formData.credit_score > 850) {
+      newErrors.credit_score = 'Credit Score must be between 300 and 850.';
+    }
+
+    // 4. Interest Rate Validation
+    if (formData.interest_rate <= 0 || formData.interest_rate > 50) {
+      newErrors.interest_rate = 'Interest rate must be between 0.1% and 50%.';
+    }
+
+    // 5. Debt-to-Income Ratio Validation
+    if (formData.debt_to_income_ratio < 0 || formData.debt_to_income_ratio >= 1) {
+      newErrors.debt_to_income_ratio = 'DTI ratio must be a valid percentage between 0 and 1 (e.g., 0.12).';
+    }
+
+    // If there are validation errors, update the state and halt submission
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Call onAssess function only if all validations pass
     onAssess(formData);
   };
 
@@ -72,7 +105,7 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
           type="button"
           onClick={() => {
             setFormData(defaultValues);
-            setError('');
+            setErrors({});
           }}
           className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60 transition"
         >
@@ -89,11 +122,11 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
             <input
               type="number"
               name="annual_income"
-              value={formData.annual_income}
+              value={formData.annual_income || ''}
               onChange={handleChange}
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 transition"
-              required
+              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none transition ${errors.annual_income ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
             />
+            {errors.annual_income && <p className="text-[10px] text-rose-400 mt-1">{errors.annual_income}</p>}
           </div>
 
           {/* Loan Amount */}
@@ -102,11 +135,11 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
             <input
               type="number"
               name="loan_amount"
-              value={formData.loan_amount}
+              value={formData.loan_amount || ''}
               onChange={handleChange}
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 transition"
-              required
+              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none transition ${errors.loan_amount ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
             />
+            {errors.loan_amount && <p className="text-[10px] text-rose-400 mt-1">{errors.loan_amount}</p>}
           </div>
 
           {/* Credit Score */}
@@ -115,13 +148,11 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
             <input
               type="number"
               name="credit_score"
-              value={formData.credit_score}
+              value={formData.credit_score || ''}
               onChange={handleChange}
-              min="300"
-              max="850"
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 transition"
-              required
+              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none transition ${errors.credit_score ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
             />
+            {errors.credit_score && <p className="text-[10px] text-rose-400 mt-1">{errors.credit_score}</p>}
           </div>
 
           {/* Interest Rate */}
@@ -131,25 +162,25 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
               type="number"
               step="0.01"
               name="interest_rate"
-              value={formData.interest_rate}
+              value={formData.interest_rate || ''}
               onChange={handleChange}
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 transition"
-              required
+              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none transition ${errors.interest_rate ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
             />
+            {errors.interest_rate && <p className="text-[10px] text-rose-400 mt-1">{errors.interest_rate}</p>}
           </div>
 
           {/* Debt-to-Income Ratio */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">Debt-to-Income Ratio</label>
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5">Debt-to-Income Ratio (0 to 1)</label>
             <input
               type="number"
               step="0.001"
               name="debt_to_income_ratio"
-              value={formData.debt_to_income_ratio}
+              value={formData.debt_to_income_ratio || ''}
               onChange={handleChange}
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 transition"
-              required
+              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none transition ${errors.debt_to_income_ratio ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
             />
+            {errors.debt_to_income_ratio && <p className="text-[10px] text-rose-400 mt-1">{errors.debt_to_income_ratio}</p>}
           </div>
 
           {/* Gender */}
@@ -254,10 +285,11 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
 
         </div>
 
-        {error && (
+        {/* General Form Error Message */}
+        {Object.keys(errors).length > 0 && (
           <div className="flex items-center gap-2 text-xs text-rose-400 bg-rose-500/10 p-3 rounded-xl border border-rose-500/20">
             <AlertCircle className="w-4 h-4 shrink-0" />
-            {error}
+            Please correct the errors in the highlighted fields above.
           </div>
         )}
 
