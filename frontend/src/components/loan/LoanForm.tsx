@@ -40,9 +40,12 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
-    // Clear the specific field's error when the user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
     }
 
     setFormData(prev => ({
@@ -63,8 +66,6 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
     // 2. Loan Amount Validation
     if (String(formData.loan_amount) === '' || formData.loan_amount <= 0) {
       newErrors.loan_amount = 'Loan amount must be greater than $0.';
-    } else if (formData.loan_amount > formData.annual_income * 10) {
-      newErrors.loan_amount = 'Loan amount exceeds reasonable limits based on income.';
     }
 
     // 3. Credit Score Validation
