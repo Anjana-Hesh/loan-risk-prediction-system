@@ -8,7 +8,6 @@ interface LoanFormProps {
   loading: boolean;
 }
 
-// Fix 1: Force TypeScript to accept empty strings as LoanFormData using "as unknown as LoanFormData"
 const emptyValues = {
   annual_income: '',
   debt_to_income_ratio: '',
@@ -129,7 +128,8 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
               name="annual_income"
               value={formData.annual_income}
               onChange={handleChange}
-              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none transition ${errors.annual_income ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
+              placeholder="e.g. 65000"
+              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none transition ${errors.annual_income ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
             />
             {errors.annual_income && <p className="text-[10px] text-rose-400 mt-1">{errors.annual_income}</p>}
           </div>
@@ -142,7 +142,8 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
               name="loan_amount"
               value={formData.loan_amount}
               onChange={handleChange}
-              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none transition ${errors.loan_amount ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
+              placeholder="e.g. 15000"
+              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none transition ${errors.loan_amount ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
             />
             {errors.loan_amount && <p className="text-[10px] text-rose-400 mt-1">{errors.loan_amount}</p>}
           </div>
@@ -155,7 +156,8 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
               name="credit_score"
               value={formData.credit_score}
               onChange={handleChange}
-              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none transition ${errors.credit_score ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
+              placeholder="e.g. 720"
+              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none transition ${errors.credit_score ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
             />
             {errors.credit_score && <p className="text-[10px] text-rose-400 mt-1">{errors.credit_score}</p>}
           </div>
@@ -169,7 +171,8 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
               name="interest_rate"
               value={formData.interest_rate}
               onChange={handleChange}
-              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none transition ${errors.interest_rate ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
+              placeholder="e.g. 10.5"
+              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none transition ${errors.interest_rate ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
             />
             {errors.interest_rate && <p className="text-[10px] text-rose-400 mt-1">{errors.interest_rate}</p>}
           </div>
@@ -183,7 +186,8 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
               name="debt_to_income_ratio"
               value={formData.debt_to_income_ratio}
               onChange={handleChange}
-              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none transition ${errors.debt_to_income_ratio ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
+              placeholder="e.g. 0.15"
+              className={`w-full bg-slate-950/80 border rounded-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none transition ${errors.debt_to_income_ratio ? 'border-rose-500 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'}`}
             />
             {errors.debt_to_income_ratio && <p className="text-[10px] text-rose-400 mt-1">{errors.debt_to_income_ratio}</p>}
           </div>
@@ -313,7 +317,7 @@ export const LoanForm: React.FC<LoanFormProps> = ({ onAssess, loading }) => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full mt-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 transition disabled:opacity-50"
+          className="w-full mt-4 py-3 bg-linear-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 transition disabled:opacity-50"
         >
           {loading ? (
             <span className="flex items-center gap-2">
